@@ -80,5 +80,5 @@ func parseContent(input []byte) []byte {
 }
 
 func saveHTML(outFName string, data []byte) error {
-	return nil
+	return os.WriteFile(outFName, data, 0644)
 }
