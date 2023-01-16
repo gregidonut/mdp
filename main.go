@@ -8,6 +8,8 @@ import (
 	"github.com/russross/blackfriday/v2"
 	"io"
 	"os"
+	"os/exec"
+	"runtime"
 )
 
 const (
@@ -91,4 +93,34 @@ func parseContent(input []byte) []byte {
 
 func saveHTML(outFName string, data []byte) error {
 	return os.WriteFile(outFName, data, 0644)
+}
+
+func preview(fName string) error {
+	cName := ""
+	cParams := make([]string, 0)
+
+	//Define executable based on OS
+	switch runtime.GOOS {
+	case "linux":
+		cName = "xdg-open"
+	case "windows":
+		cName = "cmd.exe"
+		cParams = []string{"/C", "start"}
+	case "darwin":
+		cName = "open"
+	default:
+		return fmt.Errorf("OS not supported")
+	}
+
+	// Append filename to parameters slice
+	cParams = append(cParams, fName)
+
+	// Locate executable in PATH
+	cPath, err := exec.LookPath(cName)
+	if err != nil {
+		return err
+	}
+
+	// Open the file using default program
+	return exec.Command(cPath, cParams...).Run()
 }
