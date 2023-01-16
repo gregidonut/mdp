@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/russross/blackfriday/v2"
 	"os"
 	"path/filepath"
 )
@@ -63,7 +66,17 @@ func run(fileName string) error {
 }
 
 func parseContent(input []byte) []byte {
-	return make([]byte, 0)
+	// Parse the markdown file through blackfriday and bluemonday
+	// to generate a valid and safe HTML
+	output := blackfriday.Run(input)
+	body := bluemonday.UGCPolicy().SanitizeBytes(output)
+
+	// generate html
+	var buffer bytes.Buffer
+	buffer.WriteString(header)
+	buffer.Write(body)
+	buffer.WriteString(footer)
+	return buffer.Bytes()
 }
 
 func saveHTML(outFName string, data []byte) error {
