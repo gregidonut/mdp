@@ -31,3 +31,27 @@ func Test_parseContent(t *testing.T) {
 		t.Error("Result content does not match golden file")
 	}
 }
+
+func TestRun(t *testing.T) {
+	if err := run(inputFile); err != nil {
+		t.Fatal(err)
+	}
+
+	want, err := os.ReadFile(resultFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := os.ReadFile(goldenFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(want, got) {
+		t.Logf("golden:\n%s\n", want)
+		t.Logf("result:\n%s\n", got)
+		t.Error("Result content does not match golden file")
+	}
+
+	os.Remove(resultFile)
+}
