@@ -29,6 +29,7 @@ const (
 
 func main() {
 	// Parse flags
+	flag.Bool("s", false, "Skip auto-preview")
 	filename := flag.String("file", "", "Markdown file preview")
 
 	flag.Parse()
@@ -47,13 +48,13 @@ func main() {
 		}
 	}
 
-	if err := run(*filename, os.Stdout); err != nil {
+	if err := run(*filename, os.Stdout, usedFlags["s"]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(fileName string, out io.Writer) error {
+func run(fileName string, out io.Writer, skipPreview bool) error {
 	// Read all the data from the input file and check for errors
 	input, err := os.ReadFile(fileName)
 	if err != nil {
@@ -74,7 +75,14 @@ func run(fileName string, out io.Writer) error {
 	outName := temp.Name()
 	fmt.Fprintln(out, outName)
 
-	return saveHTML(outName, htmlData)
+	if err := saveHTML(outName, htmlData); err != nil {
+		return err
+	}
+	if skipPreview {
+		return nil
+	}
+
+	return preview(outName)
 }
 
 func parseContent(input []byte) []byte {
