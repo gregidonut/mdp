@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -48,5 +49,23 @@ func main() {
 }
 
 func run(fileName string) error {
+	// Read all the data from the input file and check for errors
+	input, err := os.ReadFile(fileName)
+	if err != nil {
+		return err
+	}
+
+	htmlData := parseContent(input)
+	outName := fmt.Sprintf("%s.html", filepath.Base(fileName))
+	fmt.Println(outName)
+
+	return saveHTML(outName, htmlData)
+}
+
+func parseContent(input []byte) []byte {
+	return make([]byte, 0)
+}
+
+func saveHTML(outFName string, data []byte) error {
 	return nil
 }
