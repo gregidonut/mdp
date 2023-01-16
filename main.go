@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
+	"io"
 	"os"
 )
 
@@ -44,13 +45,13 @@ func main() {
 		}
 	}
 
-	if err := run(*filename); err != nil {
+	if err := run(*filename, os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(fileName string) error {
+func run(fileName string, out io.Writer) error {
 	// Read all the data from the input file and check for errors
 	input, err := os.ReadFile(fileName)
 	if err != nil {
@@ -69,7 +70,7 @@ func run(fileName string) error {
 	}
 
 	outName := temp.Name()
-	fmt.Println(outName)
+	fmt.Fprintln(out, outName)
 
 	return saveHTML(outName, htmlData)
 }
