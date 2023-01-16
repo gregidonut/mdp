@@ -2,7 +2,7 @@
 
 Just a test
 
-## Bullets 
+## Bullets:
 - Links [Link1](https://example.com)
 
 ## Code Block
