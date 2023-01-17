@@ -8,8 +8,10 @@ import (
 )
 
 const (
-	inputFile  = "./testdata/test1.md"
-	goldenFile = "./testdata/test1.md.html"
+	inputFile                   = "./testdata/test1.md"
+	goldenFileDefault           = "./testdata/test1.md.html"
+	templateFile1               = "./testdata/testTemplate1.html"
+	goldenFileWithTemplateFile1 = "./testdata/test2.md.html"
 )
 
 func Test_parseContent(t *testing.T) {
@@ -18,9 +20,12 @@ func Test_parseContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got := parseContent(input)
+	got, err := parseContent(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	want, err := os.ReadFile(goldenFile)
+	want, err := os.ReadFile(goldenFileDefault)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,29 +38,55 @@ func Test_parseContent(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	mockStdOut := bytes.Buffer{}
-
-	if err := run(inputFile, &mockStdOut, true); err != nil {
-		t.Fatal(err)
+	type testInputs struct {
+		name       string
+		tFName     string
+		goldenFile string
 	}
 
-	resultFile := strings.TrimSpace(mockStdOut.String())
-
-	want, err := os.ReadFile(resultFile)
-	if err != nil {
-		t.Fatal(err)
+	tests := []testInputs{
+		{
+			name:       "WithoutTFName",
+			tFName:     "",
+			goldenFile: goldenFileDefault,
+		},
+		{
+			name:       "WithTFName",
+			tFName:     templateFile1,
+			goldenFile: goldenFileWithTemplateFile1,
+		},
 	}
 
-	got, err := os.ReadFile(goldenFile)
-	if err != nil {
-		t.Fatal(err)
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 
-	if !bytes.Equal(want, got) {
-		t.Logf("golden:\n%s\n", want)
-		t.Logf("result:\n%s\n", got)
-		t.Error("Result content does not match golden file")
-	}
+			mockStdOut := bytes.Buffer{}
 
-	os.Remove(resultFile)
+			if err := run(inputFile, tt.tFName, &mockStdOut, true); err != nil {
+				t.Fatal(err)
+			}
+
+			resultFile := strings.TrimSpace(mockStdOut.String())
+
+			want, err := os.ReadFile(resultFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := os.ReadFile(tt.goldenFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !bytes.Equal(want, got) {
+				t.Logf("golden:\n%s\n", want)
+				t.Logf("result:\n%s\n", got)
+				t.Error("Result content does not match golden file")
+			}
+
+			//time.Sleep(tt.delay)
+
+			os.Remove(resultFile)
+		})
+	}
 }
