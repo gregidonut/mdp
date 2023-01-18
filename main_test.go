@@ -17,6 +17,8 @@ const (
 	goldenFileDefault           = "./testdata/test1.md.html"
 	templateFile1               = "./testdata/testTemplate1.html"
 	goldenFileWithTemplateFile1 = "./testdata/test2.md.html"
+	templateFile2               = "./testdata/testTemplate2.html"
+	goldenFileWithTemplateFile2 = "./testdata/test3.md.html"
 )
 
 func Test_parseContent(t *testing.T) {
@@ -140,10 +142,24 @@ func TestMDPCLI(t *testing.T) {
 			flags:          []string{"-s", "-file", inputFile, "-t", templateFile1},
 			goldenFileName: goldenFileWithTemplateFile1,
 		},
+		{
+			name:           "WithEnvVar -s -file " + inputFile,
+			flags:          []string{"-s", "-file", inputFile},
+			goldenFileName: goldenFileWithTemplateFile2,
+			specifyEnvVar:  true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			if tt.specifyEnvVar {
+				err := os.Setenv("MDP_TEMPLATE", templateFile2)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+
 			dir, err := os.Getwd()
 			if err != nil {
 				t.Fatal(err)
@@ -153,6 +169,7 @@ func TestMDPCLI(t *testing.T) {
 			cmd := exec.Command(cmdPath, tt.flags...)
 			out, err := cmd.CombinedOutput()
 			if err != nil {
+				t.Log(string(out))
 				t.Fatal(err)
 			}
 
