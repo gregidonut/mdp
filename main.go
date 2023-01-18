@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -40,6 +41,7 @@ func main() {
 
 	// Parse flags
 	flag.Bool("s", false, "Skip auto-preview")
+	flag.Bool("stdin", false, "input from stdin")
 	filename := flag.String("file", "", "Markdown file preview")
 	tFName := flag.String("t", "", "Alternate template file name")
 
@@ -65,19 +67,31 @@ func main() {
 		tFName = &tfNameDeref
 	}
 
-	if err := run(*filename, *tFName, os.Stdout, usedFlags["s"]); err != nil {
+	if err := run(*filename, *tFName, os.Stdout, usedFlags["s"], usedFlags["stdin"]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(fileName, tFName string, out io.Writer, skipPreview bool) error {
-	// Read all the data from the input file and check for errors
-	input, err := os.ReadFile(fileName)
-	if err != nil {
-		return err
+func run(fileName, tFName string, out io.Writer, skipPreview, inputFromSTDN bool) error {
+	var input []byte
+
+	if inputFromSTDN {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			scannerBytes := append(scanner.Bytes(), '\n')
+			input = append(input, scannerBytes...)
+		}
+		fileName = "stdin"
+	} else {
+		var err error
+		input, err = os.ReadFile(fileName)
+		if err != nil {
+			return err
+		}
 	}
 
+	// Read all the data from the input file and check for errors
 	htmlData, err := parseContent(input, fileName, tFName)
 	if err != nil {
 		return err
