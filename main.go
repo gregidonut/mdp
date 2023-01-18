@@ -22,6 +22,7 @@ const (
         <title>{{ .Title }}</title>
     </head>
     <body>
+    <header><h1>{{ .FileName }}</h1></header>
 {{ .Body }}
     </body>
 </html>
@@ -30,8 +31,9 @@ const (
 
 // content represents the HTML content to add into the template
 type content struct {
-	Title string
-	Body  template.HTML
+	Title    string
+	FileName template.HTML
+	Body     template.HTML
 }
 
 func main() {
@@ -69,7 +71,7 @@ func run(fileName, tFName string, out io.Writer, skipPreview bool) error {
 		return err
 	}
 
-	htmlData, err := parseContent(input, tFName)
+	htmlData, err := parseContent(input, fileName, tFName)
 	if err != nil {
 		return err
 	}
@@ -97,7 +99,7 @@ func run(fileName, tFName string, out io.Writer, skipPreview bool) error {
 	return preview(outName)
 }
 
-func parseContent(input []byte, tFName string) ([]byte, error) {
+func parseContent(input []byte, inputFName, tFName string) ([]byte, error) {
 	// Parse the markdown file through blackfriday and bluemonday
 	// to generate a valid and safe HTML
 	output := blackfriday.Run(input)
@@ -118,8 +120,9 @@ func parseContent(input []byte, tFName string) ([]byte, error) {
 	}
 
 	c := content{
-		Title: "Markdown Preview Tool",
-		Body:  template.HTML(body),
+		Title:    "Markdown Preview Tool",
+		FileName: template.HTML(inputFName),
+		Body:     template.HTML(body),
 	}
 
 	// generate html
