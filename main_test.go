@@ -148,6 +148,11 @@ func TestMDPCLI(t *testing.T) {
 			goldenFileName: goldenFileWithTemplateFile2,
 			specifyEnvVar:  true,
 		},
+		{
+			name:           "WithoutEnvVar -s -file " + inputFile + " -t " + templateFile1,
+			flags:          []string{"-s", "-file", inputFile, "-t", templateFile1},
+			goldenFileName: goldenFileWithTemplateFile1,
+		},
 	}
 
 	for _, tt := range tests {
