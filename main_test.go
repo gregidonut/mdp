@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -13,12 +14,13 @@ import (
 )
 
 const (
-	inputFile                   = "./testdata/test1.md"
-	goldenFileDefault           = "./testdata/test1.md.html"
-	templateFile1               = "./testdata/testTemplate1.html"
-	goldenFileWithTemplateFile1 = "./testdata/test2.md.html"
-	templateFile2               = "./testdata/testTemplate2.html"
-	goldenFileWithTemplateFile2 = "./testdata/test3.md.html"
+	inputFile                                  = "./testdata/test1.md"
+	goldenFileDefault                          = "./testdata/test1.md.html"
+	templateFile1                              = "./testdata/testTemplate1.html"
+	goldenFileWithTemplateFile1                = "./testdata/test2.md.html"
+	templateFile2                              = "./testdata/testTemplate2.html"
+	goldenFileWithTemplateFile2                = "./testdata/test3.md.html"
+	goldenFileWithTemplateFile2WithStdinHeader = "./testdata/test3.1.md.html"
 )
 
 func Test_parseContent(t *testing.T) {
@@ -131,6 +133,7 @@ func TestMDPCLI(t *testing.T) {
 		goldenFileName string
 		flags          []string
 		specifyEnvVar  bool
+		stdin          bool
 	}{
 		{
 			name:           "WithoutEnvVar -s -file " + inputFile,
@@ -153,6 +156,12 @@ func TestMDPCLI(t *testing.T) {
 			flags:          []string{"-s", "-file", inputFile, "-t", templateFile1},
 			goldenFileName: goldenFileWithTemplateFile1,
 		},
+		{
+			name:           "WithEnvVarFromSTDIN -s -stdin",
+			flags:          []string{"-s", "-stdin"},
+			goldenFileName: goldenFileWithTemplateFile2WithStdinHeader,
+			stdin:          true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -172,6 +181,22 @@ func TestMDPCLI(t *testing.T) {
 
 			cmdPath := filepath.Join(dir, binName)
 			cmd := exec.Command(cmdPath, tt.flags...)
+
+			if tt.stdin {
+				cmdStdIn, err := cmd.StdinPipe()
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				inputFileBytes, err := os.ReadFile(inputFile)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				io.WriteString(cmdStdIn, string(inputFileBytes))
+				cmdStdIn.Close()
+			}
+
 			out, err := cmd.CombinedOutput()
 			if err != nil {
 				t.Log(string(out))
