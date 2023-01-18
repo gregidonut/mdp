@@ -69,7 +69,7 @@ func TestRun(t *testing.T) {
 
 			mockStdOut := bytes.Buffer{}
 
-			if err := run(inputFile, tt.tFName, &mockStdOut, true); err != nil {
+			if err := run(inputFile, tt.tFName, &mockStdOut, true, false); err != nil {
 				t.Fatal(err)
 			}
 
@@ -149,7 +149,7 @@ func TestMDPCLI(t *testing.T) {
 			specifyEnvVar:  true,
 		},
 		{
-			name:           "WithoutEnvVar -s -file " + inputFile + " -t " + templateFile1,
+			name:           "WithEnvVar -s -file " + inputFile + " -t " + templateFile1,
 			flags:          []string{"-s", "-file", inputFile, "-t", templateFile1},
 			goldenFileName: goldenFileWithTemplateFile1,
 		},
