@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>{{ .Title }}</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: inherit;
+        }
+
+        html {
+            font-size: 62.5%;
+        }
+
+        body {
+            font-size: 1.6rem;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        header {
+            height: 5rem;
+        }
+
+        main {
+            padding-top: 5rem;
+        }
+    </style>
+</head>
+<body>
+<header><code>{{ .FileName }}</code></header>
+<main>
+    {{ .Body }}
+</main>
+</body>
+</html>
