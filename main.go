@@ -37,23 +37,13 @@ type content struct {
 }
 
 func main() {
-	// defining the filename var here to simulate a priority system where
-	// even if env var is defined if -file flag is used it prioritizes -flag usage
-	var tFName *string
 
 	// Parse flags
 	flag.Bool("s", false, "Skip auto-preview")
 	filename := flag.String("file", "", "Markdown file preview")
-	tFName = flag.String("t", "", "Alternate template file name")
+	tFName := flag.String("t", "", "Alternate template file name")
 
 	flag.Parse()
-
-	// Check if the user defined the ENV VAR for custom template file
-	if os.Getenv("MDP_TEMPLATE") != "" {
-		tfNameDeref := os.Getenv("MDP_TEMPLATE")
-		// this needs to be a pointer to be compatible with flag.String() output
-		tFName = &tfNameDeref
-	}
 
 	// Put flag in a container that we can check later if the flag is used
 	usedFlags := make(map[string]bool)
@@ -61,12 +51,18 @@ func main() {
 		usedFlags[f.Name] = true
 	})
 
-	switch {
-	case usedFlags["file"]:
+	if usedFlags["file"] {
 		if *filename == "" {
 			flag.Usage()
 			os.Exit(1)
 		}
+	}
+
+	// Check if the user defined the ENV VAR for custom template file
+	if os.Getenv("MDP_TEMPLATE") != "" && !usedFlags["t"] {
+		tfNameDeref := os.Getenv("MDP_TEMPLATE")
+		// this needs to be a pointer to be compatible with flag.String() output
+		tFName = &tfNameDeref
 	}
 
 	if err := run(*filename, *tFName, os.Stdout, usedFlags["s"]); err != nil {
